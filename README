@@ -1,0 +1,57 @@
+Courtney Napoles, cdnapoles@gmail.com
+last updated 7/6/2012
+
+
+=== ABOUT ===
+
+This program generates sentence-level compressions via deletion. It is
+a modified implementation of the ILP model described in Clarke and 
+Lapata, 2008, "Global Inference for Sentence Compression: An Integer 
+Linear Programming Approach".
+
+
+=== SETUP
+
+ant compile
+
+ILOG CPLEX needs to be installed to run. You must provide cplex.jar
+and the ILOG license file.
+
+The following environmental variables also need to be set:
+VAR			Location at CLSP
+$ILOG			~cnapoles/tools/ILOG/CPLEX_Studio_AcademicResearch122/cplex/bin/x86-64_sles10_4.1
+$ILOG_LICENSE_FILE	~cnapoles/tools/ILOG/ilm/access.ilm
+
+
+=== RUN
+
+./compress	
+		Usage: ./compress -i path/to/input [-l path/to/lm] [-x]
+		  -i val  input file or directory
+		  -l val  path to language model
+		  -x      input file(s) in xml format
+
+
+=== JAVA CLASS
+
+To generate extractive compressions (by deletion only) using an extended 
+version of Clarke & Lapata (2008)'s ILP model:
+
+java -Xms2g -Xmx10g -Djava.library.path=$ILOG -cp Compression.jar:lib/linearb.jar:lib/cplex.jar:lib/stanford-parser.jar research.compression.SentenceCompressor -in=/path/to/input/file-or-dir -lm=/path/to/trigram/lm
+   Required arguments:
+     -in=val		path to the input file or directory
+     -lm=val		path to the language model (trigram)
+   Optional arguments:
+     -char		use character-based constraints
+     -cr=val		minimum compression rate (default is 0.4)
+     -l=val		specify lambda value (tradeoff between n-gram probability and
+     			"significance" score in objective function
+     -ngram		use the n-gram constraint (each n-gram in compression present in
+     			Google n-grams; n-gram server must be running.
+     -target=val	specify the target compression length for each sentence
+     -test_lambda	test varying values of lambda (for dev)
+     -tweet		use a Twitter length constraint (120 characters)
+     -xml		input is in xml format	 
+
+Example call:
+java -Xms2g -Xmx10g -Djava.library.path=$ILOG -cp bin:lib/berkeleylm.jar:lib/cplex.jar:lib/stanford-parser.jar research.compression.SentenceCompressor -in=data/sample_text -lm=gigaword.kn3.gz

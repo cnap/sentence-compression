@@ -1,0 +1,50 @@
+#!/bin/bash
+
+####
+# This script will compress a file or directory of files using
+# either deletion or paraphrasing. The following paths need to be
+# set to the appropriate locations.
+
+usage(){
+    echo "Usage: ./compress -i path/to/input [-l path/to/lm] [-x] "
+    echo "  -i val  input file or directory"
+    echo "  -l      path to language model"
+    echo "  -x      input file(s) in xml format"
+}
+
+ILOG=${ILOG:-~cnapoles/tools/ILOG/CPLEX_Studio_AcademicResearch122/cplex/bin/x86-64_sles10_4.1}
+ILOG_LICENSE_FILE=${ILOG_LICENSE_FILE:-~cnapoles/tools/ILOG/ilm/access.ilm}
+export ILOG_LICENSE_FILE=$ILOG_LICENSE_FILE
+
+lmfile=~cnapoles/gigaword.kn3.gz
+infile=
+xml=
+
+while getopts 'i:l:x' opt
+do
+    case $opt in
+	i) infile="$OPTARG";;
+	x) xml=1;;
+	l) lmfile="$OPTARG";;
+	?) usage
+	    exit 2;;
+    esac
+done
+
+if [ ! $infile ]
+then
+    echo "Input not specified."
+    usage
+    exit
+fi
+    
+
+command="java -Xmx4g -Djava.library.path=$ILOG -classpath bin:lib/cplex.jar:lib/stanford-parser.jar:lib/berkeleylm.jar research.compression.SentenceCompressor -in=$infile -lm=$lmfile"
+
+if [ $xml ]
+then
+    command="$command -xml"
+fi
+
+echo $command 1>&2
+eval $command

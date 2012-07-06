@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="Compression" default="compile" basedir=".">
+
+  <path id="compile.classpath">
+    <fileset dir="./lib">
+      <include name="cplex.jar"/>
+      <include name="stanford-parser.jar"/>
+      <include name="berkeleylm.jar"/>
+    </fileset>
+  </path>
+
+  <target name="compile" description="Compile source for compression">
+    <mkdir dir="./bin" />
+    <javac srcdir="src" destdir="bin" classpathref="compile.classpath" includeantruntime="false">
+      <include name="research/compression/SentenceCompressor.java"/>
+      <include name="research/compression/CompressionModel.java"/>
+      <include name="research/lib/Document.java"/>
+      <include name="research/lib/DocumentImporter.java"/>
+      <include name="research/lib/GrammarDependency.java"/>
+      <include name="research/lib/MyBerkeleyLm.java"/>
+      <include name="research/lib/ParseTree.java"/>
+      <include name="research/lib/Sentence.java"/>
+      <include name="research/lib/SocketClient.java"/>
+    </javac>
+    <copy todir="./bin">
+      <fileset dir="./src" includes="research/lib/rsc/*"/>
+      <fileset dir="./src" includes="research/lib/englishPCFG.ser.gz"/>
+    </copy>
+  </target>
+  
+  <target name="clean">
+    <delete verbose="true" quiet="true">
+      <fileset dir="./bin">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+  </target>
+
+</project>

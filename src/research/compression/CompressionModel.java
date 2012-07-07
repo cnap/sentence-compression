@@ -45,7 +45,7 @@ public class CompressionModel {
 	// length/original length)
 	boolean paraphrase = false; // paraphrasing not fully implemented/tested
 	boolean ngramConstraint = false; // only use n-grams found in Google n-grams
-	boolean writeModel = false;
+	boolean debug = false;
 	MyBerkeleyLm lm;
 	String modelFile; // if user wants to save the model output
 	Sentence sentence; // sentence being compressed
@@ -192,10 +192,30 @@ public class CompressionModel {
 
 		// add significance score
 		for (int i = 1; i < n; i++) {
-			if (sentence.getSigScore(i) != 0.0)
-				objfn.addTerm(sentence.getSigScore(i) * lambda, delta[i]);
+			double d = getSigScore(i);
+			if (d != 0.0)
+				objfn.addTerm(d * lambda, delta[i]);
 		}
 		cplex.addMaximize(objfn);
+	}
+
+	public double getSigScore(int i) {
+		double d = 0;
+		if (sentence.isTopicWord(i)) {
+			d = 1.0 * sentence.getDepth(i) / sentence.getHeight();
+			d *= sentence.getFrequency(i);
+			d *= Math.log(lm.getTopicFreqCorpus()
+					/ lm.getWordFrequency(sentTokens[i]));
+			if (debug) {
+				System.err.println("lp(" + sentTokens[i] + ") = " + lm.getLogProb(sentTokens[i]));
+				System.err.println("sig(" + sentTokens[i] + ") = " + d + " = "
+						+ sentence.getDepth(i) + "/" + sentence.getHeight()
+						+ " * " + sentence.getFrequency(i) + " * log("
+						+ lm.getTopicFreqCorpus() + "/"
+						+ lm.getWordFrequency(sentTokens[i]) + ")");
+			}
+		}
+		return d;
 	}
 
 	/**
@@ -395,7 +415,7 @@ public class CompressionModel {
 		} catch (IloException e) {
 			System.err.println("ERROR: unable to determine CPLEX status");
 		}
-		if (writeModel)
+		if (debug)
 			writeModel();
 		return output;
 	}
@@ -512,7 +532,7 @@ public class CompressionModel {
 	}
 
 	public void writeSentenceModels(boolean b) {
-		writeModel = b;
+		debug = b;
 
 	}
 

@@ -4,10 +4,8 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.zip.GZIPInputStream;
 
 import research.lib.*;
-import research.lib.Sentence.Clause;
 
 /**
  * Compresses sentences subject to several different constraints, such as a
@@ -45,8 +43,6 @@ public class SentenceCompressor {
 	HashMap<String,Integer> zeta, targetLengths;
 	List<Document> documents;
 	// counts etc for significance model
-	HashMap<String, Double> corpusFreq; // frequency of topic words in a corpus
-	HashSet<String> topicWords; // topic words (nouns/verbs)
 
 	MyBerkeleyLm lm; // lm for querying n-gram probabilities
 	CompressionModel lpp; // this is where the magic happens
@@ -117,9 +113,6 @@ public class SentenceCompressor {
 			testSentences.addAll(d.getSentences());
 		}
 		System.err.println(testSentences.size() + " sents loaded");
-
-		// calculate various corpus counts
-		initializeCounts();
 
 		// load the language model
 		lm = new MyBerkeleyLm(lmModelFile);
@@ -236,14 +229,6 @@ public class SentenceCompressor {
 		String sol= "";
 		DecimalFormat df = new DecimalFormat("#.#");
 		for (Sentence sent : testSentences) {
-			try {
-				sent.loadSigScores(corpusFreq);
-			} catch (Exception e) {
-				System.err.println("Error: can't initialize sentence"
-						+ sent.getId());
-				e.printStackTrace();
-				continue;
-			}
 
 			// to test various different values of lambda
 			if (testLambda) {
@@ -280,44 +265,6 @@ public class SentenceCompressor {
 							+ minCR);
 				}
 			}
-		}
-	}
-
-	/**
-	 * calculate frequency of topic words in the sentences
-	 * 
-	 * @throws IOException
-	 */
-	public void initializeCounts() throws IOException {
-		// corpus-based counts for the significance scores
-		topicWords = new HashSet<String>();
-		for (Document doc : documents)
-			topicWords.addAll(doc.getTopicWords());
-
-		corpusFreq = new HashMap<String,Double>();
-		BufferedReader file;
-		if (lmModelFile.contains(".gz")) {
-			FileInputStream fin = new FileInputStream(lmModelFile);
-			GZIPInputStream gzis = new GZIPInputStream(fin);
-			InputStreamReader xover = new InputStreamReader(gzis);
-			file =  new BufferedReader(xover);
-		} else {
-			file = new BufferedReader(new FileReader(lmModelFile));
-		}
-		String line, temp[];
-		while ((line = file.readLine()) != null && !line.contains("\\2-grams")) {
-			temp = line.split("\\t");
-			if (temp.length>2 && topicWords.contains(temp[1])) {
-				if (debug) 
-					System.err.println(temp[1] + "\t" + corpusFreq.get(temp[1]));
-				corpusFreq.put(temp[1],1000000*Math.pow(10, Double.parseDouble(temp[0])));
-				topicWords.remove(temp[1]);
-			}
-		}
-		file.close();
-		//System.err.println(topicWords.size()+" topic words unseen; "+corpusFreq.size()+" topic words seen");
-		for (String s : topicWords)  {
-			corpusFreq.put(s, 1.0); // smoothing to prevent x/0
 		}
 	}
 

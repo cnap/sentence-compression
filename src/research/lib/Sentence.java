@@ -53,9 +53,6 @@ public class Sentence {
 	LinkedList<Clause> clauses; //for PPs and SBARs
 	Document document = null; // if this sentence belongs to a document
 	// Every sentence starts at index 0. index -1 is the start node <s>
-	double[] sigScore; // significance score of each token in the sentence
-	final double topicFreqCorpus = 384013.14; // freq per 1m; estimated from
-	// http://corpus.leeds.ac.uk/internet_pos_en
 	int[] charLength; // length of each token
 
 	public Sentence() {}
@@ -354,37 +351,6 @@ public class Sentence {
 	}
 
 	/**
-	 * calculate the significance score of each token
-	 * 
-	 * @param corpusFreq
-	 */
-	public void loadSigScores(HashMap<String, Double> corpusFreq) {
-		sigScore = new double[len];
-		String sscores = "SIG\t-1\t";
-		for (int i = 1; i < len; i++) {
-			if (debug && isTopicWord(i)) {
-				System.err
-						.println("IS TOPIC: " + i + " depth=" + getDepth(i)
-								+ " height=" + getHeight() + " freq="
-								+ getFrequency(i));
-				sigScore[i] = getDepth(i) / getHeight();
-				sigScore[i] *= getFrequency(i);
-				sigScore[i] *= Math.log(topicFreqCorpus
-						/ corpusFreq.get(tokens[i]));
-				System.err.println("  " + sigScore[i] + "=" + topicFreqCorpus
-						+ "/" + corpusFreq.get(tokens[i]));
-			}
-			else {
-				if (debug)
-					System.err.println("NO TOPIC: " + i);
-			}
-			sscores += sigScore[i] + "\t";
-		}
-		if (debug)
-			System.err.println(sscores);
-	}
-
-	/**
 	 * determine whether each token is within brackets
 	 */
 	public void findParens() {
@@ -507,10 +473,6 @@ public class Sentence {
 	public String[] getVerbs() { return verbs; }
 	public void setParent(Document d) {
 		document = d;
-	}
-
-	public double getSigScore(int i) {
-		return sigScore[i];
 	}
 
 	public int getCharLength(int i) {

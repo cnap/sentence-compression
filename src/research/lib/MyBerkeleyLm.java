@@ -19,7 +19,9 @@ import edu.berkeley.nlp.lm.io.LmReaders;
  */
 public class MyBerkeleyLm {
 	NgramLanguageModel<String> lm;
-	
+	private double topicFreqCorpus = 384013.14; // freq per 1m; estimated from
+										// http://corpus.leeds.ac.uk/internet_pos_en
+
 	/**
 	 * load the lm using the Berkeley lm
 	 * 
@@ -27,6 +29,10 @@ public class MyBerkeleyLm {
 	 */
 	public MyBerkeleyLm(String lmfile) {
 		readLmFromFile(lmfile);
+
+		// normalize topic word frequency based on this corpus size
+		setTopicFreqCorpus(getTopicFreqCorpus() / 1000000
+				* lm.getWordIndexer().numWords());
 	}
 
 	/**
@@ -95,5 +101,18 @@ public class MyBerkeleyLm {
 
 	public int getOrder() {
 		return lm.getLmOrder();
+	}
+
+	public int getWordFrequency(String s) {
+		return (int) (lm.getWordIndexer().numWords() * Math
+						.exp(getLogProb(s)));
+	}
+
+	public void setTopicFreqCorpus(double topicFreqCorpus) {
+		this.topicFreqCorpus = topicFreqCorpus;
+	}
+
+	public double getTopicFreqCorpus() {
+		return topicFreqCorpus;
 	}
 }

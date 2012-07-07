@@ -39,7 +39,7 @@ then
 fi
     
 
-command="java -Xmx4g -Djava.library.path=$ILOG -classpath bin:lib/cplex.jar:lib/stanford-parser.jar:lib/berkeleylm.jar research.compression.SentenceCompressor -in=$infile -lm=$lmfile"
+command="java -Xmx10g -Djava.library.path=$ILOG -classpath bin:lib/cplex.jar:lib/stanford-parser.jar:lib/berkeleylm.jar research.compression.SentenceCompressor -in=$infile -lm=$lmfile"
 
 if [ $xml ]
 then

@@ -212,7 +212,7 @@ public class SentenceCompressor {
 		catch (Exception e) {
 			System.err.println("Error initialization ILP");
 			e.printStackTrace();
-			return "<ERROR>";
+			return "-1\t<ERROR>";
 		}
 	}
 
@@ -223,15 +223,14 @@ public class SentenceCompressor {
 		System.err.println("Compressing "+testSentences.size()+" sentences...");
 		// ArrayList<String> results = new ArrayList<String>();
 		HashMap<String,String> compressions;
-		String id = "";
 		String sol= "";
 		DecimalFormat df = new DecimalFormat("#.#");
 		for (Sentence sent : testSentences) {
-			id = sent.getId();
 			try {
 				sent.loadSigScores(corpusFreq);
 			} catch (Exception e) {
-				System.err.println("Error: can't initialize sentence"+id);
+				System.err.println("Error: can't initialize sentence"
+						+ sent.getId());
 				e.printStackTrace();
 				continue;
 			}
@@ -246,7 +245,9 @@ public class SentenceCompressor {
 					else compressions.put(sol,df.format(lambda));
 				}
 				for (Entry<String,String> e : compressions.entrySet())
-					System.out.println(id + "\t" + e.getValue() + "\t" + sol.split("\\s+").length + "\t" + sent.length() + "\t" + e.getKey());
+					System.out.println(e.getValue() + "\t"
+							+ sol.split("\\s+").length + "\t" + sent.length()
+							+ "\t" + e.getKey());
 			}
 
 			// if not testing lambda (running as usual)
@@ -259,13 +260,13 @@ public class SentenceCompressor {
 					if (charConstraints) slength = sent.charLength();
 
 					if (sol.equals("")) continue;
-					System.out.println(id + "\t" + slength + "\t" + sol + "\t"
+					System.out.println(slength + "\t" + sol + "\t"
 							+ targetLengths.get(sent.getId()));
 				}
 				else {
 					sol = findSolution(sent);
 					if (sol.equals("")) continue;
-					System.out.println(id + "\t" + slength + "\t" + sol + "\t"
+					System.out.println(slength + "\t" + sol + "\t"
 							+ minCR);
 				}
 			}

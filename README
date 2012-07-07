@@ -32,12 +32,20 @@ $ILOG_LICENSE_FILE	~cnapoles/tools/ILOG/ilm/access.ilm
 		  -x      input file(s) in xml format
 
 
+=== OUTPUT FORMAT
+
+<orig_len> <short_len>	<compression> <orig_indices> <compression_rate>
+
+e.g.: 
+18	7	park benefit a company haiti itself .	3 9 10 13 16 17 1	0.4
+
+
 === JAVA CLASS
 
 To generate extractive compressions (by deletion only) using an extended 
 version of Clarke & Lapata (2008)'s ILP model:
 
-java -Xms2g -Xmx10g -Djava.library.path=$ILOG -cp Compression.jar:lib/linearb.jar:lib/cplex.jar:lib/stanford-parser.jar research.compression.SentenceCompressor -in=/path/to/input/file-or-dir -lm=/path/to/trigram/lm
+java research.compression.SentenceCompressor
    Required arguments:
      -in=val		path to the input file or directory
      -lm=val		path to the language model (trigram)

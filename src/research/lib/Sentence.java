@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
  */
 public class Sentence {
 
+	public static boolean debug = false;
+
 	// parses Stanford dependency output, $1 = rel, $2 = index a, $3 = index b
 	static final Pattern depPattern = Pattern
 			.compile("([a-z]+)\\(\\S+-([0-9]+),\\s\\S+-([0-9]+)\\)");
@@ -47,13 +49,13 @@ public class Sentence {
 	int height = 0; // deepest level of embedding
 	int depth[]; // = -1 if not a topic word, o/w the first index of the (A x)
 	List<GrammarDependency> dependencies; // grammatical relations in this
-											// sentence
+	// sentence
 	LinkedList<Clause> clauses; //for PPs and SBARs
 	Document document = null; // if this sentence belongs to a document
 	// Every sentence starts at index 0. index -1 is the start node <s>
 	double[] sigScore; // significance score of each token in the sentence
 	final double topicFreqCorpus = 384013.14; // freq per 1m; estimated from
-												// http://corpus.leeds.ac.uk/internet_pos_en
+	// http://corpus.leeds.ac.uk/internet_pos_en
 	int[] charLength; // length of each token
 
 	public Sentence() {}
@@ -80,18 +82,47 @@ public class Sentence {
 			original[i] = temp[i-1];
 			tokens[i] = temp[i-1].toLowerCase();
 		}
-		charLength = new int[tokens.length];
-		for (int i = 1; i < tokens.length; i++) {
+		charLength = new int[len];
+		for (int i = 1; i < len; i++) {
 			charLength[i] = tokens[i].length() + 1; // each token length
-													// includes a space
-													// following the token
+			// includes a space
+			// following the token
 		}
 
 		if (inputIsParsed) {
 			extractPOSTags();
-		loadDependencies();
-		findParens();
+			loadDependencies();
+			findParens();
 		}
+		if (debug) {
+			System.err.println("TEXT\t" + text);
+			System.err.println("PARSE\t" + parse);
+			System.err.println("DEPPARSE\t" + depParse);
+			String orig = "ORIG\t";
+			String tokenlist = "TOKS\t";
+			String chars = "CHARS\t";
+			String postags = "POS\t";
+			String puncts = "PUNCT\t";
+			String brackets = "PARENS\t";
+			String header = "\t";
+			for (int i = 0; i < len; i++) {
+				header += i + "\t";
+				orig += original[i] + "\t";
+				tokenlist += tokens[i] + "\t";
+				chars += charLength[i] + "\t";
+				postags += pos[i] + "\t";
+				puncts += punct[i] + "\t";
+				brackets += parens[i] + "\t";
+			}
+			System.err.println(header);
+			System.err.println(orig);
+			System.err.println(tokenlist);
+			System.err.println(chars);
+			System.err.println(postags);
+			System.err.println(puncts);
+			System.err.println(brackets);
+		}
+
 	}
 
 	/**
@@ -246,6 +277,7 @@ public class Sentence {
 		}
 		String[] bp = clauses.split("\\s+");
 		int j = 0;
+		String depths = "DEPTH\t-1\t";
 		for (int i = 1; i < len; i++) {
 			while (j < bp.length && !tokens[i].equalsIgnoreCase(bp[j]))
 				j++;
@@ -257,8 +289,11 @@ public class Sentence {
 					d--;
 			}
 			depth[i] = d;
+			depths += depth[i] + "\t";
 		}
 
+		if (debug)
+			System.err.println(depths);
 		height = 1;
 		for (int i = 1; i < len; i++)
 			if (depth[i] > height)
@@ -298,7 +333,7 @@ public class Sentence {
 				i++;
 			}
 
-			if (items.size() == 0) {
+			if (items.size() == 0 && debug) {
 				System.err.println("no clauses");
 				// return false;
 			}
@@ -325,14 +360,28 @@ public class Sentence {
 	 */
 	public void loadSigScores(HashMap<String, Double> corpusFreq) {
 		sigScore = new double[len];
+		String sscores = "SIG\t-1\t";
 		for (int i = 1; i < len; i++) {
-			if (isTopicWord(i)) {
+			if (debug && isTopicWord(i)) {
+				System.err
+						.println("IS TOPIC: " + i + " depth=" + getDepth(i)
+								+ " height=" + getHeight() + " freq="
+								+ getFrequency(i));
 				sigScore[i] = getDepth(i) / getHeight();
 				sigScore[i] *= getFrequency(i);
 				sigScore[i] *= Math.log(topicFreqCorpus
 						/ corpusFreq.get(tokens[i]));
+				System.err.println("  " + sigScore[i] + "=" + topicFreqCorpus
+						+ "/" + corpusFreq.get(tokens[i]));
 			}
+			else {
+				if (debug)
+					System.err.println("NO TOPIC: " + i);
+			}
+			sscores += sigScore[i] + "\t";
 		}
+		if (debug)
+			System.err.println(sscores);
 	}
 
 	/**

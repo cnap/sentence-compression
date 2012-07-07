@@ -44,8 +44,8 @@ public class CompressionModel {
 	double minCR = 0.4; // minimum compression rate (cr=compression
 	// length/original length)
 	boolean paraphrase = false; // paraphrasing not fully implemented/tested
-	boolean hideCplexOutput = false; // cplex output goes to stdout
 	boolean ngramConstraint = false; // only use n-grams found in Google n-grams
+	boolean writeModel = false;
 	MyBerkeleyLm lm;
 	String modelFile; // if user wants to save the model output
 	Sentence sentence; // sentence being compressed
@@ -65,16 +65,10 @@ public class CompressionModel {
 	 * @param modelFile
 	 * @param minCR
 	 */
-	public CompressionModel(MyBerkeleyLm lm,
-			boolean twitter, double lambda,
-			boolean strictConstraints, boolean charConstraints,
-			boolean ngramConstraint, String modelFile, double minCR) {
+	public CompressionModel(MyBerkeleyLm lm, double lambda, String modelFile,
+			double minCR) {
 		this.lm = lm;
-		this.twitter = twitter;
 		this.lambda = lambda;
-		this.strictLength = strictConstraints;
-		this.strictCharLength = charConstraints;
-		this.ngramConstraint = ngramConstraint;
 		this.minCR = minCR;
 		try {
 			cplex = new IloCplex();
@@ -84,6 +78,14 @@ public class CompressionModel {
 		}
 		cplex.setOut(System.err);
 		this.modelFile = modelFile;
+	}
+
+	public void defineSettings(boolean twitter, boolean strictConstraints,
+			boolean charConstraints, boolean ngramConstraint) {
+		this.twitter = twitter;
+		this.strictLength = strictConstraints;
+		this.strictCharLength = charConstraints;
+		this.ngramConstraint = ngramConstraint;
 	}
 
 	/**
@@ -103,20 +105,21 @@ public class CompressionModel {
 		delta = new IloIntVar[n];
 		for (int i = 0; i < n; i++) {
 			delta[i] = cplex.boolVar();
-			delta[i].setName("d{"+i+"}");
+			delta[i].setName("d{" + sentTokens[i] + "_" + i + "}");
 		}
 		// alpha = 1 if token i starts compression, 0 o/w
 		alpha= new IloIntVar[n];
 		for (int i = 0; i < n; i++) {
 			alpha[i] = cplex.boolVar();
-			alpha[i].setName("a{"+i+"}");
+			alpha[i].setName("a{" + sentTokens[i] + "_" + i + "}");
 		}
 		// beta = 1 if bigram ij ends compression, 0 o/w
 		beta = new IloIntVar[n][n];
 		for (int i = 0; i < n; i++) {
 			for (int j = i+1; j < n; j++) {
 				beta[i][j]=cplex.boolVar();
-				beta[i][j].setName("b{"+i+","+j+"}");
+				beta[i][j].setName("b{" + sentTokens[i] + "_" + i + ","
+						+ sentTokens[j] + "_" + j + "}");
 			}
 		}
 		// gamma = 1 if trigram ijk is present in compression, 0 o/w
@@ -125,7 +128,9 @@ public class CompressionModel {
 			for (int j = i+1; j < n; j++)
 				for (int k = j+1; k < n;k++) {
 					gamma[i][j][k]=cplex.boolVar();
-					gamma[i][j][k].setName("g{"+i+","+j+","+k+"}");
+					gamma[i][j][k].setName("g{" + sentTokens[i] + "_" + i + ","
+							+ sentTokens[j] + "_" + j + "," + sentTokens[k]
+							+ "_" + k + "}");
 				}
 
 		// initialize pi if paraphrasing turned on--not implemented
@@ -217,6 +222,15 @@ public class CompressionModel {
 			for (int i = 1; i < n; i++)
 				expr.addTerm(sentence.getCharLength(i), delta[i]);
 			cplex.addLe(expr,t,"twitter length constraint");
+			expr.clear();
+			int minLength = (int) (sentence.charLength() * 0.4);
+			if (minLength >= t) {
+				minLength = (int) (t * 0.1);
+			}
+			for (int i = 1; i < n; i++) {
+				expr.addTerm(sentence.getCharLength(i), delta[i]);
+			}
+			cplex.addGe(expr, minLength, "twitter length constraint");
 		}
 		else if (strictLength) {
 			expr.clear();
@@ -372,7 +386,6 @@ public class CompressionModel {
 		} catch (Exception e) {
 			System.err.println("ERROR: no solution exists");
 			e.printStackTrace();
-			writeModel();
 		}
 		try {
 			if (cplex.getStatus() != IloCplex.Status.Optimal) {
@@ -382,6 +395,8 @@ public class CompressionModel {
 		} catch (IloException e) {
 			System.err.println("ERROR: unable to determine CPLEX status");
 		}
+		if (writeModel)
+			writeModel();
 		return output;
 	}
 
@@ -402,8 +417,9 @@ public class CompressionModel {
 	 * @throws IloException
 	 */
 	public void addGlobalConstraints() throws IloException {
-
 		int[] conjunctions = new int[n];
+		IloLinearIntExpr expr = cplex.linearIntExpr();
+
 		// add constraints for Stanford grammar dependencies
 		for (GrammarDependency gr : sentence.getDependencies()) {
 			if (gr.isMod()) {
@@ -435,7 +451,6 @@ public class CompressionModel {
 			}
 
 			// add constraints for PPs and SBARs
-			IloLinearIntExpr expr = cplex.linearIntExpr();
 			for (Clause c : sentence.getClauses()) {
 				int i = c.getHead();
 				expr.clear();
@@ -446,20 +461,20 @@ public class CompressionModel {
 				expr.addTerm(-1, delta[i]);
 				cplex.addGe(expr,0,"pp/sbar constraint");
 			}
-
-			// add constraint that there must be >= 1 non-punctuation token
-			expr.clear();
-			for (int i=1; i<n;i++) {
-				if (sentTokens[i].matches("\\w+")) {
-					expr.addTerm(1,delta[i]);
-				}
-			}
-			cplex.addGe(expr,1,"punctuation constraint");
 		}
+
+		// add constraint that there must be >= 1 non-punctuation token
+		expr.clear();
+		for (int i = 1; i < n - 1; i++) {
+			if (sentTokens[i].matches("\\w+")) {
+				expr.addTerm(1, delta[i]);
+			}
+		}
+		cplex.addGe(expr, 1, "punctuation constraint");
 
 		// at least one verb must be in the compression if a verb is in the original sentence
 		boolean found = false;
-		IloLinearIntExpr expr = cplex.linearIntExpr();
+		expr.clear();
 		for (int i = 1; i < n; i++) {
 			if (sentence.isVerb(i)) {
 				expr.addTerm(1,delta[i]);
@@ -490,4 +505,15 @@ public class CompressionModel {
 	public void setZetas(HashMap<String, Integer> zetaMap) {
 		this.zetaMap = zetaMap;
 	}
+
+	public void suppressCplexOutput(boolean b) {
+		if (b)
+			cplex.setOut(null);
+	}
+
+	public void writeSentenceModels(boolean b) {
+		writeModel = b;
+
+	}
+
 }

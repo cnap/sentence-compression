@@ -26,10 +26,13 @@ $ILOG_LICENSE_FILE	~cnapoles/tools/ILOG/ilm/access.ilm
 === RUN
 
 ./compress	
-		Usage: ./compress -i path/to/input [-l path/to/lm] [-x]
-		  -i val  input file or directory
-		  -l val  path to language model
-		  -x      input file(s) in xml format
+	Usage: ./compress -i path/to/input [-l path/to/lm] [-x]
+	  -i val  input file or directory
+	  -d      debug
+	  -l val  path to language model (binary lms should have extension .binary)
+	  -t      output should be <= 120 characters
+	  -q      suppress cplex output (normally goes to stderr)
+	  -x      input file(s) in xml format
 
 
 === OUTPUT FORMAT
@@ -52,10 +55,12 @@ java research.compression.SentenceCompressor
    Optional arguments:
      -char		use character-based constraints
      -cr=val		minimum compression rate (default is 0.4)
+     -debug             debug
      -l=val		specify lambda value (tradeoff between n-gram probability and
      			"significance" score in objective function
      -ngram		use the n-gram constraint (each n-gram in compression present in
      			Google n-grams; n-gram server must be running.
+     -quiet             supress cplex output
      -target=val	specify the target compression length for each sentence
      -test_lambda	test varying values of lambda (for dev)
      -tweet		use a Twitter length constraint (120 characters)

@@ -45,13 +45,9 @@ public class DocumentImporter {
 		if (lexParser != null) return; // already loaded grammar
 		URL grammarFile = getClass().getClassLoader().getResource(
 				"research/lib/englishPCFG.ser.gz");
-		// URL grammarFile = getClass().getClassLoader().getResource(
-		// "/research/lib/rsc/englishPCFG.ser.gz");
-		System.err.println("Found grammar at " + grammarFile);
 		lexParser = new LexicalizedParser(grammarFile.getFile());
 		tlp = new PennTreebankLanguagePack();
 		gsf = tlp.grammaticalStructureFactory(Filters.<String>acceptFilter());
-		System.err.println("Loaded parser");
 	}
 
 	/**
@@ -70,7 +66,6 @@ public class DocumentImporter {
 			Document temp;
 			if (rawText) {
 				temp = loadRawText(filename);
-				System.err.println("loaded rawtext to "+temp);
 				generateParses(temp);
 			}
 			else temp = new Document(filename);

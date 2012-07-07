@@ -36,8 +36,8 @@ public class SentenceCompressor {
 	double minCR = 0.4; // minimum compression rate (length output / length
 						// input)
 	double lambda = 1.4; // weight for significance score
-
-
+	boolean debug = false;
+	boolean quiet = false; // suppress cplex output
 	// statistics relevant to sentence being compressed
 	// int n,charLength[], b; // n is length of sentence in words, t is length
 	// constraint in char, b is length constraint in words
@@ -83,6 +83,10 @@ public class SentenceCompressor {
 			else if (opt.startsWith("-test_lambda")) testLambda = true;
 			else if (opt.startsWith("-tweet")) twitter = true;
 			else if (opt.startsWith("-xml")) rawText = false;
+			else if (opt.startsWith("-debug"))
+				debug = true;
+			else if (opt.startsWith("-quiet"))
+				quiet = true;
 			else {
 				System.err.println("Invalid option: " + opt);
 				System.exit(2);
@@ -103,6 +107,9 @@ public class SentenceCompressor {
 	public void initialize() throws Exception {
 		// load the documents
 		testSentences = new ArrayList<Sentence>();
+		if (debug) {
+			Sentence.debug = true;
+		}
 		documents = new DocumentImporter().loadDocuments(testfile, rawText);
 		for (Document d : documents) {
 			d.getTopicWordData();
@@ -135,8 +142,11 @@ public class SentenceCompressor {
 		}
 
 		// initialize the ILP
-		lpp = new CompressionModel(lm, twitter, lambda, strictConstraints,
-				charConstraints, ngramConstraint, cplexModelFile, minCR);
+		lpp = new CompressionModel(lm, lambda, cplexModelFile, minCR);
+		lpp.defineSettings(twitter, strictConstraints, charConstraints,
+				ngramConstraint);
+		lpp.suppressCplexOutput(quiet);
+		lpp.writeSentenceModels(debug);
 
 		// only if using Google n-gram constraint
 		if (ngramConstraint) {
@@ -298,6 +308,8 @@ public class SentenceCompressor {
 		while ((line = file.readLine()) != null && !line.contains("\\2-grams")) {
 			temp = line.split("\\t");
 			if (temp.length>2 && topicWords.contains(temp[1])) {
+				if (debug) 
+					System.err.println(temp[1] + "\t" + corpusFreq.get(temp[1]));
 				corpusFreq.put(temp[1],1000000*Math.pow(10, Double.parseDouble(temp[0])));
 				topicWords.remove(temp[1]);
 			}
@@ -308,7 +320,6 @@ public class SentenceCompressor {
 			corpusFreq.put(s, 1.0); // smoothing to prevent x/0
 		}
 	}
-
 
 	public String getCompression() {
 		return compression;

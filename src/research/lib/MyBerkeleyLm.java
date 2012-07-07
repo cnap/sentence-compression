@@ -26,11 +26,28 @@ public class MyBerkeleyLm {
 	 * @param lmfile
 	 */
 	public MyBerkeleyLm(String lmfile) {
+		readLmFromFile(lmfile);
+	}
+
+	/**
+	 * decides if the lm is stored in a binary file (based on extensions .b,
+	 * .bi, .bin, .binary)
+	 * 
+	 * @param lmfile
+	 */
+	private void readLmFromFile(String lmfile) {
 		System.err.println("Loading language model from " + lmfile);
 		StringWordIndexer swi = new StringWordIndexer();
-		ArrayEncodedNgramLanguageModel<String> ngramLm = LmReaders
-				.readArrayEncodedLmFromArpa(lmfile, false, swi);
-		lm = ArrayEncodedCachingLmWrapper.wrapWithCacheNotThreadSafe(ngramLm);
+		NgramLanguageModel<String> ngramLm;
+		if (lmfile.endsWith(".b") || lmfile.endsWith(".bi")
+				|| lmfile.endsWith(".bin") || lmfile.endsWith("binary")) {
+			ngramLm = LmReaders.readLmBinary(lmfile);
+		} else {
+			ngramLm = LmReaders
+					.readArrayEncodedLmFromArpa(lmfile, false, swi);
+		}
+		lm = ArrayEncodedCachingLmWrapper
+				.wrapWithCacheNotThreadSafe((ArrayEncodedNgramLanguageModel<String>) ngramLm);
 	}
 
 	// various methods for getting the log probability of an n-gram or a

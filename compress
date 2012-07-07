@@ -8,6 +8,7 @@
 ILOG=${ILOG:-~cnapoles/tools/ILOG/CPLEX_Studio_AcademicResearch122/cplex/bin/x86-64_sles10_4.1}
 ILOG_LICENSE_FILE=${ILOG_LICENSE_FILE:-~cnapoles/tools/ILOG/ilm/access.ilm}
 lmfile=~cnapoles/gigaword.kn3.gz
+thisdir=~cnapoles/sentence-compression
 
 usage(){
     echo "Usage: ./compress -i path/to/input [-l path/to/lm] [-x] "
@@ -23,7 +24,7 @@ export ILOG_LICENSE_FILE=$ILOG_LICENSE_FILE
 
 infile=
 
-command="java -Xmx10g -Djava.library.path=$ILOG -classpath bin:lib/cplex.jar:lib/stanford-parser.jar:lib/berkeleylm.jar research.compression.SentenceCompressor"
+command="java -Xmx10g -Djava.library.path=$ILOG -classpath $thisdir/bin:$thisdir/lib/cplex.jar:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar research.compression.SentenceCompressor"
 
 while getopts 'i:l:dqtx' opt
 do

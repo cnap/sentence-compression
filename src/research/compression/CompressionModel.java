@@ -1,6 +1,7 @@
 package research.compression;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import research.lib.GrammarDependency;
@@ -385,19 +386,18 @@ public class CompressionModel {
 			int len=0;
 			String deltas = "";
 			StringBuffer sb = new StringBuffer();
-			StringBuffer sb2 = new StringBuffer();
+			ArrayList<String> solution = new ArrayList<String>();
 			for (int i = 1; i < n; i++) {
 				deltas+=cplex.getValue(delta[i])+" ";
 				if (cplex.getValue(delta[i])>=0.9) { // because sometimes "binary" values are 0.999999 or 1.000001 etc.
-					sb.append(sentence.getTokens()[i]);
+					solution.add(sentence.getOriginal(i));
+					sb.append(i);
 					sb.append(" ");
-					sb2.append(i);
-					sb2.append(" ");
 					len++;
 				}
 			}
-			output = sb.toString().trim();
-			indices = sb2.toString().trim();
+			output = makePretty(solution);
+			indices = sb.toString().trim();
 			compression = output;
 			if (strictCharLength)
 				len = output.length();
@@ -418,6 +418,48 @@ public class CompressionModel {
 		if (debug)
 			writeModel();
 		return output;
+	}
+
+	/**
+	 * Make sure the first letter of the sentence is capitalized and there is
+	 * sentence-final punctuation.
+	 * 
+	 * @param sentTokens
+	 * @return
+	 */
+	private String makePretty(ArrayList<String> sentTokens) {
+		// if a sentence is missing sentence-final punctuation, add a period to
+		// the end of the sentence
+		char c;
+		for (int i = sentTokens.size() - 1; i >= 0; i--) {
+			c = sentTokens.get(i).charAt(0);
+			if (c == '.' || c == '?' || c == '!') {
+				break;
+			}
+			if (c != '\'' && !sentence.isQuotationMark(sentTokens.get(i))) {
+				sentTokens.add (".");
+				break;
+			}
+		}
+		StringBuffer sb = new StringBuffer();
+		for (String s : sentTokens) {
+			sb.append(s);
+			sb.append(" ");
+		}
+		String s = sb.toString().trim();
+		// ensure capitalization of first word
+		for (int i = 0; i < s.length(); i++) {
+			c = s.charAt(i);
+			if (c >= 65 && c <= 122) {
+				if (c <= 90)
+					break;
+				if (c >= 97) {
+					s = Character.toUpperCase(c) + s.substring(i + 1);
+					break;
+				}
+			}
+		}
+		return s;
 	}
 
 	/**

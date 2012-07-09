@@ -77,7 +77,11 @@ public class Sentence {
 		tokens[0] = "<s>";
 		for (int i = 1; i < len; i++) {
 			original[i] = temp[i-1];
-			tokens[i] = temp[i-1].toLowerCase();
+			tokens[i] = temp[i - 1].toLowerCase();
+			// change form of quotation marks to match those in the Gigaword lm
+			if (isQuotationMark(temp[i - 1])) {
+				tokens[i] = "\"";
+			}
 		}
 		charLength = new int[len];
 		for (int i = 1; i < len; i++) {
@@ -397,6 +401,22 @@ public class Sentence {
 	}
 
 	public boolean isPunct(int i) { return punct[i]; }
+
+	/**
+	 * checks if a string is a PTB-style quotation mark
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public boolean isQuotationMark(String s) {
+		if (s.length() == 2) {
+			if (s.charAt(0) == '\'' && s.charAt(0) == '\'')
+				return true;
+			else if (s.charAt(0) == '`' && s.charAt(0) == '`')
+				return true;
+		}
+		return false;
+	}
 
 	public boolean hasEdge(int i, int j) { return edges[i][j]; }
 

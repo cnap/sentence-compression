@@ -35,12 +35,19 @@ $ILOG_LICENSE_FILE	~cnapoles/tools/ILOG/ilm/access.ilm
 	  -x      input file(s) in xml format
 
 
-=== OUTPUT FORMAT
+=== INPUT
+
+The program expects tokenized text with one sentence per line.
+
+
+=== OUTPUT
 
 <orig_len> <short_len>	<compression> <orig_indices> <compression_rate>
 
-e.g.: 
-18	7	park benefit a company haiti itself .	3 9 10 13 16 17 1	0.4
+For example, for the input sentence "At the camp , the rebel troops were welcomed 
+                                     with a banner that read : `` Welcome home . ''",
+the output is as follows:
+20      13      the troops were welcomed with a banner that read : welcome home .       5 7 8 9 10 11 12 13 14 15 17 18 19      0.4
 
 
 === JAVA CLASS

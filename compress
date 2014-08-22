@@ -5,26 +5,23 @@
 #
 # Courtney Napoles, cdnapoles@gmail.com, 6 July 2012
 
-ILOG=${ILOG:-~cnapoles/tools/ILOG/CPLEX_Studio_AcademicResearch122/cplex/bin/x86-64_sles10_4.1}
-ILOG_LICENSE_FILE=${ILOG_LICENSE_FILE:-~cnapoles/tools/ILOG/ilm/access.ilm}
-lmfile=~cnapoles/gigaword.kn3.binary
-thisdir=~cnapoles/sentence-compression
+ILOG=${ILOG:/home/hltcoe/cnapoles/tools/ILOG/CPLEX_Studio126/cplex/bin/x86-64_linux}
+cplexjar=/home/hltcoe/cnapoles/tools/ILOG/CPLEX_Studio126/cplex/lib/cplex.jar 
+thisdir=`dirname $0`
 
 usage(){
-    echo "Usage: ./compress -i path/to/input [-l path/to/lm] [-x] "
+    echo "Usage: ./compress -i path/to/input -l path/to/lm [-x] "
     echo "  -i val  input file or directory"
     echo "  -d      debug"
-    echo "  -l      path to language model"
+    echo "  -l      path to language model (binary or ARPA format)"
     echo "  -t      output should be <= 120 characters"
     echo "  -q      suppress cplex output (normally goes to stderr)"
     echo "  -x      input file(s) in xml format"
 }
 
-export ILOG_LICENSE_FILE=$ILOG_LICENSE_FILE
+#export ILOG_LICENSE_FILE=$ILOG_LICENSE_FILE
 
-infile=
-
-command="java -Xmx10g -Djava.library.path=$ILOG -classpath $thisdir/bin:$thisdir/lib/cplex.jar:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar research.compression.SentenceCompressor"
+command="java -Xmx10g -Djava.library.path=$ILOG -classpath $thisdir/bin:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar:$cplexjar research.compression.SentenceCompressor"
 
 while getopts 'i:l:dqtx' opt
 do

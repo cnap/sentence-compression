@@ -1,5 +1,5 @@
 Courtney Napoles, cdnapoles@gmail.com
-last updated 7/6/2012
+last updated 22/8/2014
 
 
 === ABOUT ===
@@ -14,22 +14,18 @@ Linear Programming Approach".
 
 ant compile
 
-ILOG CPLEX needs to be installed to run. You must provide cplex.jar
-and the ILOG license file.
+ILOG CPLEX needs to be installed to run.
 
 The following environmental variables also need to be set:
-VAR			Location at CLSP
-$ILOG			~cnapoles/tools/ILOG/CPLEX_Studio_AcademicResearch122/cplex/bin/x86-64_sles10_4.1
-$ILOG_LICENSE_FILE	~cnapoles/tools/ILOG/ilm/access.ilm
-
+ILOG			~cnapoles/tools/ILOG/CPLEX_Studio126/cplex/bin/x86-64_linux
 
 === RUN
 
 ./compress	
-	Usage: ./compress -i path/to/input [-l path/to/lm] [-x]
+	Usage: ./compress -i path/to/input -l path/to/lm [-x]
 	  -i val  input file or directory
 	  -d      debug
-	  -l val  path to language model (binary lms should have extension .binary)
+	  -l val  path to language model (binary or arpa)
 	  -t      output should be <= 120 characters
 	  -q      suppress cplex output (normally goes to stderr)
 	  -x      input file(s) in xml format

@@ -1,5 +1,6 @@
 #Sentence compression
 Courtney Napoles, cdnapoles@gmail.com
+
 last updated 18 September 2015
 
 ## ABOUT
@@ -34,19 +35,21 @@ The program expects tokenized text with one sentence per line.
 
 ## OUTPUT
 
-<orig_len> <short_len>	<compression> <orig_indices> <compression_rate>
+`<orig_len> <short_len>	<compression> <orig_indices> <compression_rate>`
 
 For example, for the input sentence "At the camp , the rebel troops were welcomed 
                                      with a banner that read : `` Welcome home . ''",
 the output is as follows:
-20  8	   At camp , the troops were welcomed .	1 3 4 5 7 8 9 19	0.4
+
+`20  8	   At camp , the troops were welcomed .	1 3 4 5 7 8 9 19	0.4`
 
 ## JAVA CLASS
 
 To generate extractive compressions (by deletion only) using an extended 
 version of Clarke & Lapata (2008)'s ILP model:
 
-```java research.compression.SentenceCompressor
+```
+java research.compression.SentenceCompressor
    Required arguments:
      -in=val		path to the input file or directory
      -lm=val		path to the language model (trigram)
@@ -64,10 +67,13 @@ version of Clarke & Lapata (2008)'s ILP model:
      -tweet		use a Twitter length constraint (120 characters)
      -xml		input is in xml format	 
 ```
+
 Example call:
-```java -Xms2g -Xmx10g -Djava.library.path=$ILOG/bin/x86-64_osx \
+```
+java -Xms2g -Xmx10g -Djava.library.path=$ILOG/bin/x86-64_osx \
    -cp bin:lib/berkeleylm.jar:$ILOG/lib/cplex.jar:lib/stanford-parser.jar \
-   research.compression.SentenceCompressor -in=data/sample_text -lm=your_lm.gz```
+   research.compression.SentenceCompressor -in=data/sample_text -lm=your_lm.gz
+```
 
 ## LANGUAGE MODEL
 
@@ -78,12 +84,10 @@ language models available for download from the following sites. Note that I
 have not tested or used these models myself.
 
 The LM reader used by this program expects each n-gram line to be in the format
-
-    log_prob<TAB>ngram<TAB>backoff
+    `log_prob<TAB>ngram<TAB>backoff`
 
 If there is no backoff weight, then the format should be
-
-   log_prob<TAB>ngram
+   `log_prob<TAB>ngram`
 
 If you get a `String index out of range` error, and your LM is in ARPA, the
 fields may be space separated (instead of tab separated), or have trailing

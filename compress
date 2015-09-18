@@ -5,8 +5,8 @@
 #
 # Courtney Napoles, cdnapoles@gmail.com, 6 July 2012
 
-ILOG=${ILOG:/home/hltcoe/cnapoles/tools/ILOG/CPLEX_Studio126/cplex/bin/x86-64_linux}
-cplexjar=/home/hltcoe/cnapoles/tools/ILOG/CPLEX_Studio126/cplex/lib/cplex.jar 
+
+CPLEX=$HOME/Applications/IBM/ILOG/CPLEX_Studio126/cplex/
 thisdir=`dirname $0`
 
 usage(){
@@ -19,9 +19,7 @@ usage(){
     echo "  -x      input file(s) in xml format"
 }
 
-#export ILOG_LICENSE_FILE=$ILOG_LICENSE_FILE
-
-command="java -Xmx10g -Djava.library.path=$ILOG -classpath $thisdir/bin:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar:$cplexjar research.compression.SentenceCompressor"
+command="java -Xmx10g -Djava.library.path=$CPLEX/bin/x86-64_osx/ -classpath $thisdir/bin:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar:$CPLEX/lib/cplex.jar research.compression.SentenceCompressor"
 
 while getopts 'i:l:dqtx' opt
 do

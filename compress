@@ -16,18 +16,20 @@ usage(){
     echo "  -l      path to language model (binary or ARPA format)"
     echo "  -t      output should be <= 120 characters"
     echo "  -q      suppress cplex output (normally goes to stderr)"
+    echo "  -r      minimum compression rate (default 0.4)"
     echo "  -x      input file(s) in xml format"
 }
 
 command="java -Xmx10g -Djava.library.path=$CPLEX/bin/x86-64_osx/ -classpath $thisdir/bin:$thisdir/lib/stanford-parser.jar:$thisdir/lib/berkeleylm.jar:$CPLEX/lib/cplex.jar research.compression.SentenceCompressor"
 
-while getopts 'i:l:dqtx' opt
+while getopts 'i:l:dqtxr' opt
 do
     case $opt in
 	i) infile="$OPTARG";;
 	d) command="$command -debug";;
 	l) lmfile="$OPTARG";;
 	q) command="$command -quiet";;
+        r) command="$command -cr=$OPTARG";;
 	t) command="$command -tweet";;
 	x) command="$command -xml";;
 	?) usage

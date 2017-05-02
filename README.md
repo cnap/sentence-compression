@@ -4,6 +4,8 @@
 
 This program depends on the professional version of CPLEX, since the trial version limits the problem size. CPLEX version 12.6 is required (any other versions are not currently supported and may not function).
 
+The full version of ILOG CPLEX is available to academics through the [IBM Academic Initiative](https://developer.ibm.com/academic/).
+
 ## ABOUT
 
 This program generates sentence-level compressions via deletion. It is

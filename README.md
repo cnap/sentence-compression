@@ -1,7 +1,8 @@
-#Sentence compression
-Courtney Napoles, cdnapoles@gmail.com
+# Sentence compression
 
-last updated 18 September 2015
+## Note about ILOG CPLEX
+
+This program depends on the professional version of CPLEX, since the trial version limits the problem size. CPLEX version 12.6 is required (any other versions are not currently supported and may not function).
 
 ## ABOUT
 
@@ -97,3 +98,7 @@ script, call
 ```
 zcat your_lm.gz | perl fix_spacing.pl | gzip > your_fixed_lm.gz
 ```
+
+-----
+last updated 2 May 2017
+Courtney Napoles, napoles@cs.jhu.edu

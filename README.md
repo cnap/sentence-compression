@@ -83,7 +83,7 @@ java -Xms2g -Xmx10g -Djava.library.path=$ILOG/bin/x86-64_osx \
 The language model used is not provided for licensing issues. This software
 requires a trigram language model in ARPA format. In our research, we used a
 language model trained on English Gigaword 5 using SRILM. There are some
-language models available for download from the following sites. Note that I
+language models available for download from http://www.keithv.com/software/giga/. Note that I
 have not tested or used these models myself.
 
 The LM reader used by this program expects each n-gram line to be in the format
